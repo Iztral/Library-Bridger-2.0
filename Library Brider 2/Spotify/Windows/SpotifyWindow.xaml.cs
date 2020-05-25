@@ -29,7 +29,6 @@ namespace Library_Brider_2.Spotify.Windows
             SetupWorker();
         }
 
-
         #region background worker functions#
         private void BackgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -38,14 +37,51 @@ namespace Library_Brider_2.Spotify.Windows
 
         private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            //report progress//
-            throw new NotImplementedException();
+            progressBar.Value = e.ProgressPercentage;
+            UpdateFoundList((List<FullTrack>)e.UserState);
+        }
+
+        private void UpdateFoundList(List<FullTrack> tracksFoundInSpotify)
+        {
+            found_list.ItemsSource = null;
+            found_list.ItemsSource = tracksFoundInSpotify;
+            var item = ((List<FullTrack>)found_list.ItemsSource)[((List<FullTrack>)found_list.ItemsSource).Count - 1];
+            found_list.ScrollIntoView(item);
         }
 
         private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            //Enable playlist operations//
-            throw new NotImplementedException();
+            SearchButtonSearchFinished();
+
+            if (found_list.Items != null)
+            {
+                AddPlaylist_Button.IsEnabled = true;
+            }
+        }
+
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            SearchButtonSearchStarted();
+            backgroundWorker.RunWorkerAsync();
+        }
+
+        private void CancelSearch_Click(object sender, RoutedEventArgs e)
+        {
+            backgroundWorker.CancelAsync();
+        }
+
+        private void SearchButtonSearchFinished()
+        {
+            Search_Button.Click -= CancelSearch_Click;
+            Search_Button.Click += SearchButton_Click;
+            Search_Button.Content = "Spotify Search";
+        }
+
+        private void SearchButtonSearchStarted() 
+        {
+            Search_Button.Click -= CancelSearch_Click;
+            Search_Button.Click += SearchButton_Click;
+            Search_Button.Content = "Spotify Search";
         }
 
         private void SetupWorker()
@@ -272,7 +308,7 @@ namespace Library_Brider_2.Spotify.Windows
                 numberOfRetries++;
             }
             while (hasError || (hasError && (numberOfRetries < 3)));
-            
+
             return result;
         }
 
@@ -322,7 +358,7 @@ namespace Library_Brider_2.Spotify.Windows
             {
                 local_.SearchType = LocalSearchType.FILENAME_ONLY;
             }
-            else if(local_.SearchType == LocalSearchType.FILENAME_ONLY)
+            else if (local_.SearchType == LocalSearchType.FILENAME_ONLY)
             {
                 local_.SearchType = LocalSearchType.AUDIO_SEARCH;
             }
