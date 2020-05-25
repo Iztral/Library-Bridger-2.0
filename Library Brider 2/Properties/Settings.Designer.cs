@@ -82,5 +82,14 @@ namespace Library_Brider_2.Properties {
                 this["LikeTracks"] = value;
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3dbe7290d1e24bc8a85001c2374b4b08")]
+        public string ApplicationKey {
+            get {
+                return ((string)(this["ApplicationKey"]));
+            }
+        }
     }
 }
