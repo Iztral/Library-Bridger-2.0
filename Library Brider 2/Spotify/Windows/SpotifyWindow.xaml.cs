@@ -2,11 +2,14 @@
 using SpotifyAPI.Web;
 using SpotifyAPI.Web.Auth;
 using SpotifyAPI.Web.Enums;
+using SpotifyAPI.Web.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
 
@@ -30,8 +33,7 @@ namespace Library_Brider_2.Spotify.Windows
         #region background worker functions#
         private void BackgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
-            //search for local songs//
-            throw new NotImplementedException();
+            FillSpotifyListWithTracks(sender as BackgroundWorker);
         }
 
         private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -81,7 +83,7 @@ namespace Library_Brider_2.Spotify.Windows
         private void FillLocalListWithTracks()
         {
             string folderPath = GetFolderPath();
-            if(folderPath != null)
+            if (folderPath != null)
             {
                 List<LocalTrack> trackList = GetLocalTracksFromFolder(folderPath);
                 SortTracks(trackList);
@@ -132,7 +134,7 @@ namespace Library_Brider_2.Spotify.Windows
 
         private FileSystemInfo[] GetMusicFilesInFolder(DirectoryInfo folder)
         {
-            if(Properties.Settings.Default.ScanDepth == 1)
+            if (Properties.Settings.Default.ScanDepth == 1)
             {
                 return folder.GetFileSystemInfos("*.mp3", SearchOption.AllDirectories);
             }
@@ -140,7 +142,7 @@ namespace Library_Brider_2.Spotify.Windows
             {
                 return folder.GetFileSystemInfos("*.mp3", SearchOption.TopDirectoryOnly);
             }
-           
+
         }
 
         private LocalTrack GetLocalTrackFromPath(string path)
@@ -185,11 +187,181 @@ namespace Library_Brider_2.Spotify.Windows
             }
         }
 
-
-
         #endregion
 
         #region external search functions
+
+        private void FillSpotifyListWithTracks(BackgroundWorker backgroundWorker)
+        {
+            var tracksFromLocalList = (List<LocalTrack>)local_list.ItemsSource;
+            DeleteContainerForNotFound();
+
+            #region statistics
+            Stopwatch elapsedTimeCounter = new Stopwatch();
+            elapsedTimeCounter.Start();
+            #endregion
+
+            List<FullTrack> tracksFoundInSpotify = new List<FullTrack>();
+
+            int progressTracker = 0;
+
+            foreach (LocalTrack localTrack in tracksFromLocalList)
+            {
+                if (backgroundWorker.CancellationPending)
+                {
+                    break;
+                }
+                else
+                {
+                    SearchItem searchResults = GetTrackSearchResults(localTrack);
+                    if (IsSearchEmpty(searchResults))
+                    {
+                        FullTrack track = searchResults.Tracks.Items[0];
+                        tracksFoundInSpotify.Add(track);
+                        localTrack.SpotifyUri = track.Id;
+                    }
+                    else
+                    {
+                        ProcessNotFoundFile(localTrack);
+                    }
+                    backgroundWorker.ReportProgress(progressTracker++, tracksFoundInSpotify);
+                }
+            }
+
+            #region statistics
+            elapsedTimeCounter.Stop();
+            WriteStatisticsToFile(tracksFromLocalList, tracksFoundInSpotify, (int)elapsedTimeCounter.Elapsed.TotalSeconds);
+            #endregion
+        }
+
+        private void DeleteContainerForNotFound()
+        {
+            if (Directory.Exists("Files Not Found"))
+            {
+                Directory.Delete("Files Not Found", true);
+            }
+        }
+
+        private SearchItem GetTrackSearchResults(LocalTrack local_)
+        {
+            if (local_.SearchType == LocalSearchType.FULL_TAGS)
+            {
+                return SearchSpotifyForTrackByTags(local_);
+            }
+            if (local_.SearchType == LocalSearchType.FILENAME_ONLY)
+            {
+                return SearchSpotifyForTrackByName(local_);
+            }
+            if (local_.SearchType == LocalSearchType.AUDIO_SEARCH)
+            {
+                return SearchSpotifyForTrackByFingerprint(local_);
+            }
+
+            return new SearchItem();
+        }
+
+        private SearchItem SearchSpotifyForTrackByTags(LocalTrack local_)
+        {
+            SearchItem result;
+            int numberOfRetries = 0;
+            bool hasError;
+            do
+            {
+                result = _spotify.SearchItems(local_.FullTagTitle(), SearchType.Track, 1);
+                hasError = CheckSearchResultForError(result);
+                numberOfRetries++;
+            }
+            while (hasError || (hasError && (numberOfRetries < 3)));
+            
+            return result;
+        }
+
+        private SearchItem SearchSpotifyForTrackByName(LocalTrack local_)
+        {
+            SearchItem result;
+            int numberOfRetries = 0;
+            bool hasError;
+            do
+            {
+                result = _spotify.SearchItems(local_.FileName, SearchType.Track, 1);
+                hasError = CheckSearchResultForError(result);
+                numberOfRetries++;
+            }
+            while (hasError || (hasError && (numberOfRetries < 3)));
+
+            if (IsSearchEmpty(result) && !hasError)
+                DecreaseSearchCriteria(local_);
+
+            return result;
+        }
+
+        private SearchItem SearchSpotifyForTrackByFingerprint(LocalTrack local_)
+        {
+            throw new NotImplementedException();
+        }
+
+        private bool CheckSearchResultForError(SearchItem resultToCheck)
+        {
+            if (resultToCheck.HasError())
+            {
+                Thread.Sleep(1100);
+                return true;
+            }
+            else
+                return false;
+        }
+
+        private bool IsSearchEmpty(SearchItem resultToCheck)
+        {
+            return resultToCheck.Tracks.Items.Any();
+        }
+
+        private void DecreaseSearchCriteria(LocalTrack local_)
+        {
+            if (local_.SearchType == LocalSearchType.FULL_TAGS)
+            {
+                local_.SearchType = LocalSearchType.FILENAME_ONLY;
+            }
+            else if(local_.SearchType == LocalSearchType.FILENAME_ONLY)
+            {
+                local_.SearchType = LocalSearchType.AUDIO_SEARCH;
+            }
+        }
+
+        private void ProcessNotFoundFile(LocalTrack local_)
+        {
+            System.IO.Directory.CreateDirectory("Files Not Found");
+            local_.SpotifyUri = "not found";
+            if (Properties.Settings.Default.NotFoundBehaviour == 0)
+            {
+                SaveNotFoundTrackFileNameToContainer(local_);
+            }
+            else if (Properties.Settings.Default.NotFoundBehaviour == 1)
+            {
+                CopyNotFoundTrackToContainer(local_);
+            }
+        }
+
+        private void SaveNotFoundTrackFileNameToContainer(LocalTrack trackToSave)
+        {
+            File.AppendAllText("Files Not Found\\" + "not_found_tracks.txt",
+                    trackToSave.FileName + Environment.NewLine);
+        }
+
+        private void CopyNotFoundTrackToContainer(LocalTrack trackToSave)
+        {
+            var destFile = AppDomain.CurrentDomain.BaseDirectory +
+                    "Files Not Found\\" + Path.GetFileName(trackToSave.LocalPath);
+            File.Copy(trackToSave.LocalPath, destFile);
+        }
+
+        private void WriteStatisticsToFile(List<LocalTrack> tracksFromLocalList, List<FullTrack> tracksFoundInSpotify, int timeElapsed)
+        {
+            File.WriteAllText("statistics.txt", "Total number of songs: " + tracksFromLocalList.Count + Environment.NewLine
+                + "Number of found songs: " + tracksFoundInSpotify.Count + Environment.NewLine
+                + "Time elapsed (in seconds): " + timeElapsed);
+        }
+
         #endregion
 
         #region playlist operation functions
@@ -226,6 +398,6 @@ namespace Library_Brider_2.Spotify.Windows
             }
         }
 
-        
+
     }
 }

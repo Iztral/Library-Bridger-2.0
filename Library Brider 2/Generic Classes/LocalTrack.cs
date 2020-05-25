@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 
 namespace Library_Brider_2.Generic_Classes
 {
-    public enum SearchType { AUDIO_SEARCH, FILENAME_ONLY, FULL_TAGS }
+    public enum LocalSearchType { AUDIO_SEARCH, FILENAME_ONLY, FULL_TAGS }
 
     [XmlRootAttribute("LocalTrack", Namespace = "Library_Brider_2", IsNullable = false)]
     public class LocalTrack
@@ -21,7 +21,7 @@ namespace Library_Brider_2.Generic_Classes
 
         public DateTime ModificationDate => new FileInfo(LocalPath).LastWriteTime;
 
-        public SearchType SearchType { get; set; }
+        public LocalSearchType SearchType { get; set; }
 
         public string SpotifyUri { get; set; }
 
@@ -46,12 +46,17 @@ namespace Library_Brider_2.Generic_Classes
         {
             if (Author != null && Title != null)
             {
-                SearchType = SearchType.FULL_TAGS;
+                SearchType = LocalSearchType.FULL_TAGS;
             }
             else if (Author == null || Title == null)
             {
-                SearchType = SearchType.FILENAME_ONLY;
+                SearchType = LocalSearchType.FILENAME_ONLY;
             }
+        }
+
+        public string FullTagTitle()
+        {
+            return Author + "+" + Title;
         }
     }
 }
