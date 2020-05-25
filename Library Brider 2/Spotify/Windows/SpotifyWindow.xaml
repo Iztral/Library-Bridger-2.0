@@ -46,11 +46,11 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button x:Name="Main_Button" Content="Local Search" HorizontalAlignment="Left" Margin="1,51,0,0" VerticalAlignment="Top" Width="90" Click="LocalSearchButton_Click" Height="23" Grid.Column="1"/>
+        <Button x:Name="Main_Button" Content="Local Search" HorizontalAlignment="Left" Margin="94,51,0,0" VerticalAlignment="Top" Width="90" Click="LocalSearchButton_Click" Height="23" Grid.Column="1"/>
         <Button x:Name="Add_Button" Content="Add to Playlist:" HorizontalAlignment="Left" Margin="289,51,0,0" VerticalAlignment="Top" Width="90" Click="Add_Button_Click" IsEnabled="False" Height="23" Grid.Column="1"/>
         <TextBox x:Name="playlistName" HorizontalAlignment="Left" Height="23" Margin="384,51,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Column="1" Grid.ColumnSpan="2"/>
         <Button x:Name="Search_Button" Content="Spotify Search" HorizontalAlignment="Left" Margin="189,51,0,0" VerticalAlignment="Top" Width="95" Click="SearchButton_Click" IsEnabled="False" Height="23" RenderTransformOrigin="0.547,-0.55" Grid.Column="1"/>
-        <Button x:Name="Settings_Buttony" Content="Settings" HorizontalAlignment="Left" Margin="94,51,0,0" VerticalAlignment="Top" Width="90" Click="SettingsButton_Click" Height="23" Grid.Column="1"/>
+        <Button x:Name="Settings_Buttony" Content="Settings" HorizontalAlignment="Left" Margin="0,51,0,0" VerticalAlignment="Top" Width="90" Click="SettingsButton_Click" Height="23" Grid.Column="1"/>
 
     </Grid>
 </Window>

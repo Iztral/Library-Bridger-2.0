@@ -8,7 +8,7 @@ namespace Library_Brider_2.Generic_Classes
 
     public static class Filter
     {
-        public static List<string> BlacklistedWords = new List<string>
+        private static readonly List<string> BlacklistedWords = new List<string>
         {
             "ft.", "feat.", "featuring", "#", "lyrics"
         };
@@ -25,7 +25,7 @@ namespace Library_Brider_2.Generic_Classes
             }
         }
 
-        public static string FilterStringWithBlacklist(string stringToFilter)
+        private static string FilterStringWithBlacklist(string stringToFilter)
         {
             BlacklistedWords.ForEach(i => stringToFilter = RemoveWordFromString(stringToFilter, i));
             return stringToFilter;
@@ -41,14 +41,14 @@ namespace Library_Brider_2.Generic_Classes
             );
         }
 
-        public static string RemoveParenthesisFromString(string stringToFilter)
+        private static string RemoveParenthesisFromString(string stringToFilter)
         {
             if (!(IsRemix(stringToFilter)))
                 stringToFilter = RemoveWordFromString(stringToFilter, "(\\[.*\\])|(\\(.*\\))");
             return stringToFilter;
         }
 
-        public static bool IsRemix(string stringToCheck)
+        private static bool IsRemix(string stringToCheck)
         {
             return CheckStringForWord(stringToCheck, "remix", StringComparison.OrdinalIgnoreCase);
         }

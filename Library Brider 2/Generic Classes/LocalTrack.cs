@@ -1,9 +1,10 @@
-﻿using System.Xml.Serialization;
+﻿using System;
 using System.IO;
+using System.Xml.Serialization;
 
 namespace Library_Brider_2.Generic_Classes
 {
-    public enum TagState { MISSING_TITLE, MISSING_TAG, FULL_TAGS }
+    public enum SearchType { AUDIO_SEARCH, FILENAME_ONLY, FULL_TAGS }
 
     [XmlRootAttribute("LocalTrack", Namespace = "Library_Brider_2", IsNullable = false)]
     public class LocalTrack
@@ -16,10 +17,41 @@ namespace Library_Brider_2.Generic_Classes
 
         public string Title { get; set; }
 
-        public TagState TagState { get; set; }
+        public DateTime CreationDate => new FileInfo(LocalPath).CreationTime;
+
+        public DateTime ModificationDate => new FileInfo(LocalPath).LastWriteTime;
+
+        public SearchType SearchType { get; set; }
 
         public string SpotifyUri { get; set; }
 
         public string Error { get; set; }
+
+        public LocalTrack(string filePath)
+        {
+            LocalPath = filePath;
+            SetTagsFromFile(filePath);
+            DetermineSearchType();
+        }
+
+        private void SetTagsFromFile(string filePath)
+        {
+            TagLib.File file_tags = TagLib.File.Create(filePath);
+            Author = Filter.CleanStringForSearch(file_tags.Tag.FirstPerformer);
+            Title = Filter.CleanStringForSearch(file_tags.Tag.Title);
+            file_tags.Dispose();
+        }
+
+        private void DetermineSearchType()
+        {
+            if (Author != null && Title != null)
+            {
+                SearchType = SearchType.FULL_TAGS;
+            }
+            else if (Author == null || Title == null)
+            {
+                SearchType = SearchType.FILENAME_ONLY;
+            }
+        }
     }
 }

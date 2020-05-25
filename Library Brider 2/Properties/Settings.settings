@@ -5,9 +5,6 @@
     <Setting Name="ScanDepth" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="FileOrder" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
     <Setting Name="NotFoundBehaviour" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
@@ -19,6 +16,12 @@
     </Setting>
     <Setting Name="ApplicationKey" Type="System.String" Scope="Application">
       <Value Profile="(Default)">3dbe7290d1e24bc8a85001c2374b4b08</Value>
+    </Setting>
+    <Setting Name="FileOrder" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="FileOrderReversed" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

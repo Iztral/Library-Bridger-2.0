@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Forms;
 
@@ -83,14 +84,20 @@ namespace Library_Brider_2.Spotify.Windows
             if(folderPath != null)
             {
                 List<LocalTrack> trackList = GetLocalTracksFromFolder(folderPath);
+                SortTracks(trackList);
 
                 if (trackList != null && trackList.Count > 0)
                 {
-                    local_list.ItemsSource = trackList;
-                    progressBar.Maximum = trackList.Count;
-                    Search_Button.IsEnabled = true;
+                    FinishLocalSearch(trackList);
                 }
             }
+        }
+
+        private void FinishLocalSearch(List<LocalTrack> trackList)
+        {
+            local_list.ItemsSource = trackList;
+            progressBar.Maximum = trackList.Count;
+            Search_Button.IsEnabled = true;
         }
 
         private string GetFolderPath()
@@ -112,11 +119,72 @@ namespace Library_Brider_2.Spotify.Windows
 
         private List<LocalTrack> GetLocalTracksFromFolder(string folderPath)
         {
+            DirectoryInfo scannedFolderInfo = new DirectoryInfo(folderPath);
+
             List<LocalTrack> trackList = new List<LocalTrack>();
-            DirectoryInfo di = new DirectoryInfo(folderPath);
+            foreach (FileSystemInfo file in GetMusicFilesInFolder(scannedFolderInfo))
+            {
+                trackList.Add(new LocalTrack(file.FullName));
+            }
 
             return trackList;
         }
+
+        private FileSystemInfo[] GetMusicFilesInFolder(DirectoryInfo folder)
+        {
+            if(Properties.Settings.Default.ScanDepth == 1)
+            {
+                return folder.GetFileSystemInfos("*.mp3", SearchOption.AllDirectories);
+            }
+            else
+            {
+                return folder.GetFileSystemInfos("*.mp3", SearchOption.TopDirectoryOnly);
+            }
+           
+        }
+
+        private LocalTrack GetLocalTrackFromPath(string path)
+        {
+            return new LocalTrack(path);
+        }
+
+        private void SortTracks(List<LocalTrack> trackList)
+        {
+            switch (Properties.Settings.Default.FileOrder)
+            {
+                case 0:
+                    if (Properties.Settings.Default.FileOrderReversed)
+                        trackList = trackList.OrderByDescending(o => o.FileName).ToList();
+                    else
+                        trackList = trackList.OrderBy(o => o.FileName).ToList();
+                    break;
+                case 1:
+                    if (Properties.Settings.Default.FileOrderReversed)
+                        trackList = trackList.OrderByDescending(o => o.Author).ToList();
+                    else
+                        trackList = trackList.OrderBy(o => o.Author).ToList();
+                    break;
+                case 2:
+                    if (Properties.Settings.Default.FileOrderReversed)
+                        trackList = trackList.OrderByDescending(o => o.Title).ToList();
+                    else
+                        trackList = trackList.OrderBy(o => o.Title).ToList();
+                    break;
+                case 3:
+                    if (Properties.Settings.Default.FileOrderReversed)
+                        trackList = trackList.OrderByDescending(o => o.CreationDate).ToList();
+                    else
+                        trackList = trackList.OrderBy(o => o.CreationDate).ToList();
+                    break;
+                case 4:
+                    if (Properties.Settings.Default.FileOrderReversed)
+                        trackList = trackList.OrderByDescending(o => o.ModificationDate).ToList();
+                    else
+                        trackList = trackList.OrderBy(o => o.ModificationDate).ToList();
+                    break;
+            }
+        }
+
 
 
         #endregion

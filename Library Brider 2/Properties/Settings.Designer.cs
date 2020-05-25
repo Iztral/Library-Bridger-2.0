@@ -38,18 +38,6 @@ namespace Library_Brider_2.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int FileOrder {
-            get {
-                return ((int)(this["FileOrder"]));
-            }
-            set {
-                this["FileOrder"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public int NotFoundBehaviour {
             get {
                 return ((int)(this["NotFoundBehaviour"]));
@@ -89,6 +77,30 @@ namespace Library_Brider_2.Properties {
         public string ApplicationKey {
             get {
                 return ((string)(this["ApplicationKey"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int FileOrder {
+            get {
+                return ((int)(this["FileOrder"]));
+            }
+            set {
+                this["FileOrder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool FileOrderReversed {
+            get {
+                return ((bool)(this["FileOrderReversed"]));
+            }
+            set {
+                this["FileOrderReversed"] = value;
             }
         }
     }
