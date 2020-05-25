@@ -1,0 +1,56 @@
+﻿<Window x:Class="Library_Brider_2.Spotify.Windows.SpotifyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Library_Brider_2.Spotify.Windows"
+        mc:Ignorable="d"
+        Title="Library Bridger" Height="485" Width="848.586" MinWidth="934">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="216*"/>
+            <ColumnDefinition Width="243*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40*"/>
+            <RowDefinition Height="187*"/>
+        </Grid.RowDefinitions>
+        <Menu Grid.ColumnSpan="3" Height="22" VerticalAlignment="Top">
+            <MenuItem Header="_Backup" RenderTransformOrigin="1.812,0.562">
+                <MenuItem Header="_Save" Click="SaveBackup_Button_Click"/>
+                <MenuItem Header="_Load" Click="LoadBackup_Button_Click"/>
+            </MenuItem>
+        </Menu>
+        <Button x:Name="Auth_Button" Content="Authorize" HorizontalAlignment="Left" Margin="1,27,0,0" VerticalAlignment="Top" Width="90" Click="AuthButton_Click" Height="19" Grid.Column="1"/>
+        <ProgressBar x:Name="progressBar" Height="19" Margin="94,27,11,0" VerticalAlignment="Top" Grid.Column="1" Grid.ColumnSpan="2"/>
+        <ListView x:Name="local_list" Margin="0,1,0,9" ItemsSource="{Binding Mode=OneWay}" Grid.Row="1" Grid.Column="1">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path= File_name}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <ListView x:Name="found_list" Margin="6,1,0,9" Grid.Column="2" SelectionChanged="found_list_SelectionChanged" Grid.Row="1">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Delete" Click="Delete_Button_Click"/>
+                    <MenuItem Header="Replace" Click="Replace_Button_Click"/>
+                    <MenuItem Header="Find Local" Click="Find_Button_Click"/>
+                </ContextMenu>
+            </ListView.ContextMenu>
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Author" DisplayMemberBinding="{Binding Path= Artists[0].Name}"/>
+                    <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Path= Name}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Button x:Name="Main_Button" Content="Local Search" HorizontalAlignment="Left" Margin="1,51,0,0" VerticalAlignment="Top" Width="90" Click="MainButton_Click" Height="23" Grid.Column="1"/>
+        <Button x:Name="Add_Button" Content="Add to Playlist:" HorizontalAlignment="Left" Margin="289,51,0,0" VerticalAlignment="Top" Width="90" Click="Add_Button_Click" IsEnabled="False" Height="23" Grid.Column="1"/>
+        <TextBox x:Name="playlistName" HorizontalAlignment="Left" Height="23" Margin="384,51,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Column="1" Grid.ColumnSpan="2"/>
+        <Button x:Name="Search_Button" Content="Spotify Search" HorizontalAlignment="Left" Margin="189,51,0,0" VerticalAlignment="Top" Width="95" Click="SearchButton_Click" IsEnabled="False" Height="23" RenderTransformOrigin="0.547,-0.55" Grid.Column="1"/>
+        <Button x:Name="Settings_Buttony" Content="Settings" HorizontalAlignment="Left" Margin="94,51,0,0" VerticalAlignment="Top" Width="90" Click="SettingsButton_Click" Height="23" Grid.Column="1"/>
+
+    </Grid>
+</Window>

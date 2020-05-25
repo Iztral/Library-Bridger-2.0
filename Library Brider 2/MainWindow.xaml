@@ -1,0 +1,15 @@
+﻿<Window x:Class="Library_Brider_2.PickServiceWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Library_Brider_2"
+        mc:Ignorable="d"
+        Title="Library Bridger" Height="244.833" Width="341.5">
+    <Grid>
+        <Label Content="Choose your streaming platform:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <Button  x:Name="SpotifyButton" HorizontalAlignment="Left" Margin="73,41,0,0" VerticalAlignment="Top" Width="192" Height="150" BorderThickness="0" ClipToBounds="True" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" Click="SpotifyButton_Click">
+            <Image Source="Resources/Images/external-content.duckduckgo.com.png"/>
+        </Button>
+    </Grid>
+</Window>
