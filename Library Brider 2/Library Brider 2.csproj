@@ -80,6 +80,9 @@
     </ApplicationDefinition>
     <Compile Include="Generic Classes\Filter.cs" />
     <Compile Include="Generic Classes\LocalTrack.cs" />
+    <Compile Include="Spotify\Windows\ReplaceDialog.xaml.cs">
+      <DependentUpon>ReplaceDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Spotify\Windows\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
@@ -98,6 +101,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Spotify\Windows\ReplaceDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Spotify\Windows\SettingsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

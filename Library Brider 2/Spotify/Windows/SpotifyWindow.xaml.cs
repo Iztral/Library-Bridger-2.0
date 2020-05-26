@@ -541,6 +541,7 @@ namespace Library_Brider_2.Spotify.Windows
 
         #endregion
 
+        /* TODO
         #region found tracks edit functions
 
         private void Delete_Button_Click(object sender, RoutedEventArgs e)
@@ -687,5 +688,6 @@ namespace Library_Brider_2.Spotify.Windows
             fs.Close();
         }
         #endregion
+    */
     }
 }
