@@ -11,6 +11,14 @@ namespace Library_Brider_2.Spotify.Windows
     public partial class ReplaceDialog : Window
     {
         public FullTrack returnTrack;
+
+        private class ReplacementTrack
+        {
+            public string ImagePath { get; set; }
+            public string Name { get; set; }
+            public FullTrack SpotifyTrack { get; set; }
+        }
+
         public ReplaceDialog(SearchItem search_result)
         {
             List<ReplacementTrack> list = new List<ReplacementTrack>();
@@ -21,25 +29,20 @@ namespace Library_Brider_2.Spotify.Windows
                 {
                     ImagePath = track.Album.Images[0].Url,
                     Name = track.Artists[0].Name + " - " + track.Name,
-                    Spot_track = track
+                    SpotifyTrack = track
                 };
                 list.Add(repTrack);
             }
-            replaceTrackBox.ItemsSource = list;
+            switchBox.ItemsSource = list;
         }
 
-        private class ReplacementTrack
-        {
-            public string ImagePath { get; set; }
-            public string Name { get; set; }
-            public FullTrack Spot_track { get; set; }
-        }
+        
 
         private void SwitchBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (switchBox.SelectedItem != null)
             {
-                returnTrack = ((ReplacementTrack)switchBox.SelectedItem).Spot_track;
+                returnTrack = ((ReplacementTrack)switchBox.SelectedItem).SpotifyTrack;
             }
             this.DialogResult = true;
         }

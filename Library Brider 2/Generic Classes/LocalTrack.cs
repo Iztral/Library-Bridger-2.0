@@ -34,6 +34,11 @@ namespace Library_Brider_2.Generic_Classes
             DetermineSearchType();
         }
 
+        public LocalTrack()
+        {
+
+        }
+
         private void SetTagsFromFile(string filePath)
         {
             TagLib.File file_tags = TagLib.File.Create(filePath);

@@ -25,11 +25,6 @@ namespace Library_Brider_2.Spotify.Windows
         private readonly static SpotifyWebAPI _spotify = new SpotifyWebAPI();
         readonly BackgroundWorker backgroundWorker = new BackgroundWorker();
 
-        private List<FullTrack> GetListOfFoundTracks()
-        {
-            return (List<FullTrack>)found_list.ItemsSource;
-        }
-
         public SpotifyWindow()
         {
             InitializeComponent();
@@ -45,15 +40,7 @@ namespace Library_Brider_2.Spotify.Windows
         private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             progressBar.Value = e.ProgressPercentage;
-            UpdateFoundList((List<FullTrack>)e.UserState);
-        }
-
-        private void UpdateFoundList(List<FullTrack> tracksFoundInSpotify)
-        {
-            found_list.ItemsSource = null;
-            found_list.ItemsSource = tracksFoundInSpotify;
-            var item = GetListOfFoundTracks()[GetListOfFoundTracks().Count - 1];
-            found_list.ScrollIntoView(item);
+            ScrollToLatestTrack((List<FullTrack>)e.UserState);
         }
 
         private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -73,7 +60,7 @@ namespace Library_Brider_2.Spotify.Windows
             Search_Button.Content = "Spotify Search";
         }
 
-        private void SearchButtonSearchStarted() 
+        private void SearchButtonSearchStarted()
         {
             Search_Button.Click -= CancelSearch_Click;
             Search_Button.Click += SearchButton_Click;
@@ -93,7 +80,7 @@ namespace Library_Brider_2.Spotify.Windows
 
         #region authorization functions
 
-        public void Authorize(string _clientId)
+        private void Authorize(string _clientId)
         {
             ImplicitGrantAuth auth = new ImplicitGrantAuth(_clientId,
                 "http://localhost:4002", "http://localhost:4002",
@@ -107,6 +94,15 @@ namespace Library_Brider_2.Spotify.Windows
             auth.Start();
             auth.OpenBrowser();
         }
+
+        private bool IsAuthorized()
+        {
+            if (_spotify.AccessToken != null)
+                return true;
+            else
+                return false;
+        }
+
 
         #endregion
 
@@ -151,14 +147,14 @@ namespace Library_Brider_2.Spotify.Windows
             }
         }
 
+        private List<FullTrack> ListOfFoundTracks => (List<FullTrack>)found_list.ItemsSource;
+
         private List<LocalTrack> GetLocalTracksFromFolder(string folderPath)
         {
-            DirectoryInfo scannedFolderInfo = new DirectoryInfo(folderPath);
-
             List<LocalTrack> trackList = new List<LocalTrack>();
-            foreach (FileSystemInfo file in GetMusicFilesInFolder(scannedFolderInfo))
+            foreach (FileSystemInfo file in GetMusicFilesInFolder(new DirectoryInfo(folderPath)))
             {
-                trackList.Add(new LocalTrack(file.FullName));
+                trackList.Add(GetLocalTrackFromPath(file.FullName));
             }
 
             return trackList;
@@ -166,15 +162,9 @@ namespace Library_Brider_2.Spotify.Windows
 
         private FileSystemInfo[] GetMusicFilesInFolder(DirectoryInfo folder)
         {
-            if (Properties.Settings.Default.ScanDepth == 1)
-            {
-                return folder.GetFileSystemInfos("*.mp3", SearchOption.AllDirectories);
-            }
-            else
-            {
-                return folder.GetFileSystemInfos("*.mp3", SearchOption.TopDirectoryOnly);
-            }
-
+            return Properties.Settings.Default.ScanDepth == 1
+                ? folder.GetFileSystemInfos("*.mp3", SearchOption.AllDirectories)
+                : folder.GetFileSystemInfos("*.mp3", SearchOption.TopDirectoryOnly);
         }
 
         private LocalTrack GetLocalTrackFromPath(string path)
@@ -187,34 +177,29 @@ namespace Library_Brider_2.Spotify.Windows
             switch (Properties.Settings.Default.FileOrder)
             {
                 case 0:
-                    if (Properties.Settings.Default.FileOrderReversed)
-                        trackList = trackList.OrderByDescending(o => o.FileName).ToList();
-                    else
-                        trackList = trackList.OrderBy(o => o.FileName).ToList();
+                    trackList = Properties.Settings.Default.FileOrderReversed
+                        ? trackList.OrderByDescending(o => o.FileName).ToList()
+                        : trackList.OrderBy(o => o.FileName).ToList();
                     break;
                 case 1:
-                    if (Properties.Settings.Default.FileOrderReversed)
-                        trackList = trackList.OrderByDescending(o => o.Author).ToList();
-                    else
-                        trackList = trackList.OrderBy(o => o.Author).ToList();
+                    trackList = Properties.Settings.Default.FileOrderReversed
+                        ? trackList.OrderByDescending(o => o.Author).ToList()
+                        : trackList.OrderBy(o => o.Author).ToList();
                     break;
                 case 2:
-                    if (Properties.Settings.Default.FileOrderReversed)
-                        trackList = trackList.OrderByDescending(o => o.Title).ToList();
-                    else
-                        trackList = trackList.OrderBy(o => o.Title).ToList();
+                    trackList = Properties.Settings.Default.FileOrderReversed
+                        ? trackList.OrderByDescending(o => o.Title).ToList()
+                        : trackList.OrderBy(o => o.Title).ToList();
                     break;
                 case 3:
-                    if (Properties.Settings.Default.FileOrderReversed)
-                        trackList = trackList.OrderByDescending(o => o.CreationDate).ToList();
-                    else
-                        trackList = trackList.OrderBy(o => o.CreationDate).ToList();
+                    trackList = Properties.Settings.Default.FileOrderReversed
+                        ? trackList.OrderByDescending(o => o.CreationDate).ToList()
+                        : trackList.OrderBy(o => o.CreationDate).ToList();
                     break;
                 case 4:
-                    if (Properties.Settings.Default.FileOrderReversed)
-                        trackList = trackList.OrderByDescending(o => o.ModificationDate).ToList();
-                    else
-                        trackList = trackList.OrderBy(o => o.ModificationDate).ToList();
+                    trackList = Properties.Settings.Default.FileOrderReversed
+                        ? trackList.OrderByDescending(o => o.ModificationDate).ToList()
+                        : trackList.OrderBy(o => o.ModificationDate).ToList();
                     break;
             }
         }
@@ -225,7 +210,6 @@ namespace Library_Brider_2.Spotify.Windows
 
         private void FillSpotifyListWithTracks(BackgroundWorker backgroundWorker)
         {
-            var tracksFromLocalList = (List<LocalTrack>)local_list.ItemsSource;
             DeleteContainerForNotFound();
 
             #region statistics
@@ -237,12 +221,11 @@ namespace Library_Brider_2.Spotify.Windows
 
             int progressTracker = 0;
 
+            List<LocalTrack> tracksFromLocalList = ListOfLocalTracks;
             foreach (LocalTrack localTrack in tracksFromLocalList)
             {
                 if (backgroundWorker.CancellationPending)
-                {
                     break;
-                }
                 else
                 {
                     SearchItem searchResults = GetTrackSearchResults(localTrack, 1);
@@ -253,9 +236,8 @@ namespace Library_Brider_2.Spotify.Windows
                         localTrack.SpotifyUri = track.Id;
                     }
                     else
-                    {
                         ProcessNotFoundFile(localTrack);
-                    }
+
                     backgroundWorker.ReportProgress(progressTracker++, tracksFoundInSpotify);
                 }
             }
@@ -269,9 +251,7 @@ namespace Library_Brider_2.Spotify.Windows
         private void DeleteContainerForNotFound()
         {
             if (Directory.Exists("Files Not Found"))
-            {
                 Directory.Delete("Files Not Found", true);
-            }
         }
 
         private SearchItem GetTrackSearchResults(LocalTrack local_, int limitResultAmout)
@@ -310,9 +290,9 @@ namespace Library_Brider_2.Spotify.Windows
 
         private SearchItem SearchSpotifyForTrackByName(LocalTrack local_, int limitResultAmout)
         {
-            SearchItem result;
             int numberOfRetries = 0;
             bool hasError;
+            SearchItem result;
             do
             {
                 result = _spotify.SearchItems(local_.FileName, SearchType.Track, limitResultAmout);
@@ -327,14 +307,25 @@ namespace Library_Brider_2.Spotify.Windows
             return result;
         }
 
-        private SearchItem SearchSpotifyForTrackByFingerprint(LocalTrack local_, int limitResultAmout)
+        private List<LocalTrack> ListOfLocalTracks => (List<LocalTrack>)local_list.ItemsSource;
+
+        private void ScrollToLatestTrack(List<FullTrack> tracksFoundInSpotify)
+        {
+            found_list.ItemsSource = null;
+            found_list.ItemsSource = tracksFoundInSpotify;
+            found_list.ScrollIntoView(ListOfFoundTracks[ListOfFoundTracks.Count - 1]);
+        }
+
+        private SearchItem SearchSpotifyForTrackByFingerprint(LocalTrack local_, int resultAmountLimiter)
         {
             SearchItem result;
             int numberOfRetries = 0;
             bool hasError;
+
+            //GetAudioFingerPrint();//
             do
             {
-                result = _spotify.SearchItems(local_.FileName, SearchType.Track, limitResultAmout);
+                result = _spotify.SearchItems(local_.FileName, SearchType.Track, resultAmountLimiter);
                 hasError = CheckSearchResultForError(result);
                 numberOfRetries++;
             }
@@ -364,27 +355,29 @@ namespace Library_Brider_2.Spotify.Windows
 
         private void DecreaseSearchCriteria(LocalTrack local_)
         {
-            if (local_.SearchType == LocalSearchType.FULL_TAGS)
+            switch (local_.SearchType)
             {
-                local_.SearchType = LocalSearchType.FILENAME_ONLY;
-            }
-            else if (local_.SearchType == LocalSearchType.FILENAME_ONLY)
-            {
-                local_.SearchType = LocalSearchType.AUDIO_SEARCH;
+                case LocalSearchType.FULL_TAGS:
+                    local_.SearchType = LocalSearchType.FILENAME_ONLY;
+                    break;
+                case LocalSearchType.FILENAME_ONLY:
+                    local_.SearchType = LocalSearchType.AUDIO_SEARCH;
+                    break;
             }
         }
 
         private void ProcessNotFoundFile(LocalTrack local_)
         {
-            System.IO.Directory.CreateDirectory("Files Not Found");
+            Directory.CreateDirectory("Files Not Found");
             local_.SpotifyUri = "not found";
-            if (Properties.Settings.Default.NotFoundBehaviour == 0)
+            switch (Properties.Settings.Default.NotFoundBehaviour)
             {
-                SaveNotFoundTrackFileNameToContainer(local_);
-            }
-            else if (Properties.Settings.Default.NotFoundBehaviour == 1)
-            {
-                CopyNotFoundTrackToContainer(local_);
+                case 0:
+                    SaveNotFoundTrackFileNameToContainer(local_);
+                    break;
+                case 1:
+                    CopyNotFoundTrackToContainer(local_);
+                    break;
             }
         }
 
@@ -396,9 +389,8 @@ namespace Library_Brider_2.Spotify.Windows
 
         private void CopyNotFoundTrackToContainer(LocalTrack trackToSave)
         {
-            var destFile = AppDomain.CurrentDomain.BaseDirectory +
-                    "Files Not Found\\" + Path.GetFileName(trackToSave.LocalPath);
-            File.Copy(trackToSave.LocalPath, destFile);
+            File.Copy(trackToSave.LocalPath, AppDomain.CurrentDomain.BaseDirectory +
+                    "Files Not Found\\" + Path.GetFileName(trackToSave.LocalPath));
         }
 
         private void WriteStatisticsToFile(List<LocalTrack> tracksFromLocalList, List<FullTrack> tracksFoundInSpotify, int timeElapsed)
@@ -410,82 +402,13 @@ namespace Library_Brider_2.Spotify.Windows
 
         #endregion
 
-        #region playlist operation functions
-
-        #endregion
-
-        #region edit found tracks functions
-        #endregion
-
-        #region backup application state
-
-        #endregion
-
-        #region main buttons logic
-
-        private void SettingsButton_Click(object sender, RoutedEventArgs e)
-        {
-            SettingsWindow settingsWindow = new SettingsWindow();
-            settingsWindow.Show();
-        }
-
-        private void AuthButton_Click(object sender, RoutedEventArgs e)
-        {
-            Authorize(Properties.Settings.Default.ApplicationKey);
-        }
-
-        private void LocalSearchButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_spotify.AccessToken != null)
-            {
-                FillLocalListWithTracks();
-            }
-            else
-            {
-                System.Windows.MessageBox.Show("First, you must authorize the application.");
-            }
-        }
-
-        private void SearchButton_Click(object sender, RoutedEventArgs e)
-        {
-            SearchButtonSearchStarted();
-            backgroundWorker.RunWorkerAsync();
-        }
-
-        private void CancelSearch_Click(object sender, RoutedEventArgs e)
-        {
-            backgroundWorker.CancelAsync();
-        }
-
-        #endregion
-
         #region playlist creation functions
 
-        private void AddPlaylistButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (!backgroundWorker.IsBusy && IsPlaylistNameNotEmpty())
-            {
-                ErrorResponse response = CreateFilledPlaylistInSpotify();
-
-                if (response.Error == null)
-                {
-                    MessageBox.Show("Playlist " + playlistName.Text + " was created.");
-                }
-                else
-                {
-                    MessageBox.Show("Something went wrong. Error:" + Environment.NewLine + response.Error.Message);
-                }
-            }
-        }
-
-        private bool IsPlaylistNameNotEmpty()
-        {
-            return !String.IsNullOrWhiteSpace(playlistName.Text);
-        }
+        private bool IsPlaylistNameNotEmpty => !string.IsNullOrWhiteSpace(playlistName.Text);
 
         private ErrorResponse CreateFilledPlaylistInSpotify()
         {
-            return AddTracks(CreateEmptyPlaylistInSpotify().Id, GetListOfFoundTracks());
+            return AddTracks(CreateEmptyPlaylistInSpotify().Id, ListOfFoundTracks);
         }
 
         private FullPlaylist CreateEmptyPlaylistInSpotify()
@@ -541,39 +464,42 @@ namespace Library_Brider_2.Spotify.Windows
 
         #endregion
 
-        /* TODO
-        #region found tracks edit functions
+        #region edit found tracks functions
 
         private void Delete_Button_Click(object sender, RoutedEventArgs e)
         {
-            if (!backgroundWorker.IsBusy && found_list.SelectedItem != null)
+            if (IsFoundListNotEmptyOrProcessed())
             {
-                (GetListOfFoundTracks()).Remove((FullTrack)found_list.SelectedItem);
-                var old = found_list.ItemsSource;
-                found_list.ItemsSource = null;
-                found_list.ItemsSource = old;
+                (ListOfFoundTracks).Remove((FullTrack)found_list.SelectedItem);
+                UpdateFoundList();
             }
+        }
+
+        private bool IsFoundListNotEmptyOrProcessed()
+        {
+            return !backgroundWorker.IsBusy && found_list.SelectedItem != null;
+        }
+
+        private void UpdateFoundList()
+        {
+            var old = found_list.ItemsSource;
+            found_list.ItemsSource = null;
+            found_list.ItemsSource = old;
         }
 
         private void Replace_Button_Click(object sender, RoutedEventArgs e)
         {
-            if (!backgroundWorker.IsBusy && found_list.SelectedItem != null)
+            if (IsFoundListNotEmptyOrProcessed())
             {
-                string selectedSpotify = ((FullTrack)found_list.SelectedItem).Id;
-                int selectedIndex = found_list.SelectedIndex;
-
-                var listlocal_ = (List<LocalTrack>)local_list.ItemsSource;
-                LocalTrack local_ = listlocal_.Find(x => x.SpotifyUri == selectedSpotify);
-                if (local_ != null)
+                LocalTrack localTrack = ListOfLocalTracks.Find(x => x.SpotifyUri == ((FullTrack)found_list.SelectedItem).Id);
+                if (localTrack != null)
                 {
-                    var list = GetTrackSearchResults(local_, 5);
-                    ReplaceDialog dialog = new ReplaceDialog(list);
+                    ReplaceDialog dialog = new ReplaceDialog(GetTrackSearchResults(localTrack, 5));
                     if (dialog.ShowDialog() == true && dialog.returnTrack != null)
                     {
-                        var old = GetListOfFoundTracks();
                         found_list.ItemsSource = null;
-                        old[selectedIndex] = dialog.returnTrack;
-                        found_list.ItemsSource = old;
+                        ListOfFoundTracks[found_list.SelectedIndex] = dialog.returnTrack;
+                        found_list.ItemsSource = ListOfFoundTracks;
                     }
                 }
             }
@@ -581,47 +507,164 @@ namespace Library_Brider_2.Spotify.Windows
 
         private void Find_Button_Click(object sender, RoutedEventArgs e)
         {
-            if (!backgroundWorker.IsBusy && found_list.SelectedItem != null)
+            if (IsFoundListNotEmptyOrProcessed())
             {
-                string selectedSpotify = ((FullTrack)found_list.SelectedItem).Id;
-                var listlocal_ = (List<LocalTrack>)local_list.ItemsSource;
-                var local_ = listlocal_.Find(x => x.SpotifyUri == selectedSpotify);
+                LocalTrack local_ = ListOfLocalTracks.Find(x => x.SpotifyUri == ((FullTrack)found_list.SelectedItem).Id);
                 local_list.SelectedItem = local_;
                 local_list.ScrollIntoView(local_);
-                
             }
         }
 
         #endregion
 
-        #region backup
+        #region backup application state
+
+        public void BackupApplicationState(List<LocalTrack> listLocal_, List<FullTrack> listSpotify_)
+        {
+            SetupBackupFolder();
+
+            SerializeLocalTracksToFile(listLocal_);
+            SerializeSpotifyTracksToFile(listSpotify_);
+        }
+
+        private void SetupBackupFolder()
+        {
+            if (Directory.Exists("Backup"))
+            {
+                Directory.Delete("Backup", true);
+            }
+            Directory.CreateDirectory("Backup");
+        }
+
+        private void SerializeLocalTracksToFile(List<LocalTrack> listLocal_)
+        {
+            XmlSerializer serialiser = new XmlSerializer(typeof(List<LocalTrack>));
+            using (TextWriter FileStream = new StreamWriter("Backup\\list_local.xml"))
+            {
+                serialiser.Serialize(FileStream, listLocal_);
+                FileStream.Close();
+            }
+        }
+
+        private void SerializeSpotifyTracksToFile(List<FullTrack> listSpotify_)
+        {
+            XmlSerializer serialiser = new XmlSerializer(typeof(List<string>));
+            using (TextWriter FileStream = new StreamWriter("Backup\\list_spotify.xml"))
+            {
+                serialiser.Serialize(FileStream, GetTrackIDs(listSpotify_));
+                FileStream.Close();
+            }
+        }
+
+        private List<string> GetTrackIDs(List<FullTrack> listSpotify_)
+        {
+            List<string> trackIds = new List<string>();
+            listSpotify_.ForEach(x => trackIds.Add(x.Id));
+
+            return trackIds;
+        }
+
+        public void LoadApplicationState(ref List<LocalTrack> listLocal_, ref List<string> listSpotify_)
+        {
+            LoadLocalListFromXML(ref listLocal_);
+
+            LoadSpotifyListFromXML(ref listSpotify_);
+        }
+
+        private bool DoesBackupExist()
+        {
+            return File.Exists("Backup\\list_local.xml") && File.Exists("Backup\\list_spotify.xml");
+        }
+
+        private void LoadLocalListFromXML(ref List<LocalTrack> listLocal_)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(List<LocalTrack>));
+            using (FileStream fs = new FileStream(@"Backup\\list_local.xml", FileMode.Open))
+            {
+                listLocal_ = (List<LocalTrack>)serializer.Deserialize(fs);
+                fs.Close();
+            }
+        }
+
+        private void LoadSpotifyListFromXML(ref List<string> listSpotify_)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(List<string>));
+            using (FileStream fs = new FileStream(@"Backup\\list_spotify.xml", FileMode.Open))
+            {
+                listSpotify_ = (List<string>)serializer.Deserialize(fs);
+                fs.Close();
+            }
+        }
+
+        #endregion
+
+        #region main buttons logic
+
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsWindow settingsWindow = new SettingsWindow();
+            settingsWindow.Show();
+        }
+
+        private void AuthButton_Click(object sender, RoutedEventArgs e)
+        {
+            Authorize(Properties.Settings.Default.ApplicationKey);
+        }
+
+        private void LocalSearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsAuthorized())
+                FillLocalListWithTracks();
+            else
+                MessageBox.Show("First, you must authorize the application.");
+        }
+
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            SearchButtonSearchStarted();
+            backgroundWorker.RunWorkerAsync();
+        }
+
+        private void CancelSearch_Click(object sender, RoutedEventArgs e)
+        {
+            backgroundWorker.CancelAsync();
+        }
+
+        private void AddPlaylistButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!backgroundWorker.IsBusy && IsPlaylistNameNotEmpty)
+            {
+                ErrorResponse response = CreateFilledPlaylistInSpotify();
+
+                if (response.Error == null)
+                    MessageBox.Show("Playlist " + playlistName.Text + " was created.");
+                else
+                    MessageBox.Show("Something went wrong. Error:" + Environment.NewLine + response.Error.Message);
+            }
+        }
+
         private void SaveBackup_Button_Click(object sender, RoutedEventArgs e)
         {
             if (!(local_list.Items.IsEmpty || found_list.Items.IsEmpty))
-            {
-                WriteToXML((List<LocalTrack>)local_list.ItemsSource, (List<FullTrack>)found_list.ItemsSource);
-            }
+                BackupApplicationState(ListOfLocalTracks, ListOfFoundTracks);
             else
-            {
                 MessageBox.Show("One of lists is empty.");
-            }
         }
 
         private void LoadBackup_Button_Click(object sender, RoutedEventArgs e)
         {
-            if (_spotify.AccessToken != null)
+            if (IsAuthorized())
             {
-                if (File.Exists("Backup\\list_local.xml") && File.Exists("Backup\\list_spotify.xml"))
+                if (DoesBackupExist())
                 {
                     List<LocalTrack> listLocal_ = new List<LocalTrack>();
-                    List<string> songIds = new List<string>();
                     List<FullTrack> listSpotify_ = new List<FullTrack>();
 
-                    ReadFromXML(ref listLocal_, ref songIds);
-                    foreach (string songId in songIds)
-                    {
-                        listSpotify_.Add(_spotify.GetTrack(songId));
-                    }
+                    List<string> songIds = new List<string>();
+
+                    LoadApplicationState(ref listLocal_, ref songIds);
+
+                    songIds.ForEach(x => listSpotify_.Add(_spotify.GetTrack(x)));
 
                     if (!(listLocal_.Count == 0 || listSpotify_.Count == 0))
                     {
@@ -631,63 +674,14 @@ namespace Library_Brider_2.Spotify.Windows
                         AddPlaylist_Button.IsEnabled = true;
                     }
                     else
-                    {
                         MessageBox.Show("Backups corrupted.");
-                    }
                 }
                 else
-                {
                     MessageBox.Show("No backup found.");
-                }
             }
             else
-            {
                 MessageBox.Show("Application is unathorized");
-            }
-        }
-
-        public void WriteToXML(List<LocalTrack> listLocal_, List<FullTrack> listSpotify_)
-        {
-            if (Directory.Exists("Backup"))
-            {
-                Directory.Delete("Backup", true);
-            }
-            Directory.CreateDirectory("Backup");
-
-            XmlSerializer serialiser = new XmlSerializer(typeof(List<LocalTrack>));
-            TextWriter FileStream = new StreamWriter("Backup\\list_local.xml");
-            serialiser.Serialize(FileStream, listLocal_);
-            FileStream.Close();
-
-            serialiser = new XmlSerializer(typeof(List<string>));
-            FileStream = new StreamWriter("Backup\\list_spotify.xml");
-            serialiser.Serialize(FileStream, WriteFullTrack(listSpotify_));
-            FileStream.Close();
-        }
-
-        private List<string> WriteFullTrack(List<FullTrack> listSpotify_)
-        {
-            List<string> trackIds = new List<string>();
-            foreach (FullTrack fullTrack in listSpotify_)
-            {
-                trackIds.Add(fullTrack.Id);
-            }
-            return trackIds;
-        }
-
-        public void ReadFromXML(ref List<LocalTrack> listLocal_, ref List<string> listSpotify_)
-        {
-            XmlSerializer serializer = new XmlSerializer(typeof(List<LocalTrack>));
-            FileStream fs = new FileStream(@"Backup\\list_local.xml", FileMode.Open);
-            listLocal_ = (List<LocalTrack>)serializer.Deserialize(fs);
-            fs.Close();
-
-            serializer = new XmlSerializer(typeof(List<string>));
-            fs = new FileStream(@"Backup\\list_spotify.xml", FileMode.Open);
-            listSpotify_ = (List<string>)serializer.Deserialize(fs);
-            fs.Close();
         }
         #endregion
-    */
     }
 }

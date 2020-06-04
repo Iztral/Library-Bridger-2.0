@@ -27,7 +27,7 @@
         <ListView x:Name="local_list" Margin="0,1,0,9" ItemsSource="{Binding Mode=OneWay}" Grid.Row="1" Grid.Column="1">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path= File_name}"/>
+                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path= FileName}"/>
                 </GridView>
             </ListView.View>
         </ListView>
