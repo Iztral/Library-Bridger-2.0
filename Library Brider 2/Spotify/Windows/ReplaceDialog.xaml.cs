@@ -1,7 +1,7 @@
-﻿using SpotifyAPI.Web.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+using SpotifyAPI.Web;
 
 namespace Library_Brider_2.Spotify.Windows
 {
@@ -19,7 +19,7 @@ namespace Library_Brider_2.Spotify.Windows
             public FullTrack SpotifyTrack { get; set; }
         }
 
-        public ReplaceDialog(SearchItem search_result)
+        public ReplaceDialog(SearchClient search_result)
         {
             List<ReplacementTrack> list = new List<ReplacementTrack>();
             InitializeComponent();

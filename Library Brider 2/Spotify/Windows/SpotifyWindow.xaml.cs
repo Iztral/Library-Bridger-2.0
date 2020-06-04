@@ -1,8 +1,5 @@
 ﻿using Library_Brider_2.Generic_Classes;
 using SpotifyAPI.Web;
-using SpotifyAPI.Web.Auth;
-using SpotifyAPI.Web.Enums;
-using SpotifyAPI.Web.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,7 +19,7 @@ namespace Library_Brider_2.Spotify.Windows
     /// </summary>
     public partial class SpotifyWindow : Window
     {
-        private readonly static SpotifyWebAPI _spotify = new SpotifyWebAPI();
+        SpotifyClient _spotify = new SpotifyClient();
         readonly BackgroundWorker backgroundWorker = new BackgroundWorker();
 
         public SpotifyWindow()
