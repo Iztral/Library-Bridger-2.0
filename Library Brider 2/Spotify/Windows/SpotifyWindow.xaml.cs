@@ -497,9 +497,10 @@ namespace Library_Brider_2.Spotify.Windows
                     ReplaceDialog dialog = new ReplaceDialog(GetTrackSearchResults(localTrack, 5));
                     if (dialog.ShowDialog() == true && dialog.returnTrack != null)
                     {
+                        List<FullTrack> old = ListOfFoundTracks;
+                        old[found_list.SelectedIndex] = dialog.returnTrack;
                         found_list.ItemsSource = null;
-                        ListOfFoundTracks[found_list.SelectedIndex] = dialog.returnTrack;
-                        found_list.ItemsSource = ListOfFoundTracks;
+                        found_list.ItemsSource = old;
                     }
                 }
             }
