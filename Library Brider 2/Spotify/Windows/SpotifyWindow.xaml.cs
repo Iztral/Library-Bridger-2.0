@@ -87,7 +87,7 @@ namespace Library_Brider_2.Spotify.Windows
 
             _server.ImplictGrantReceived += OnImplictGrantReceived;
 
-            LoginRequest request = new LoginRequest(_server.BaseUri, Properties.Settings.Default.ApplicationKey, LoginRequest.ResponseType.Code)
+            LoginRequest request = new LoginRequest(_server.BaseUri, Properties.Settings.Default.ClientID, LoginRequest.ResponseType.Code)
             {
                 Scope = new List<string> { Scopes.UserLibraryModify, Scopes.PlaylistModifyPrivate, Scopes.PlaylistModifyPublic }
             };

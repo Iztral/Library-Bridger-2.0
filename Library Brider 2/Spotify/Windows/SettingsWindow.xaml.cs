@@ -18,33 +18,6 @@ namespace Library_Brider_2.Spotify.Windows
     /// Interaction logic for SettingsWindow.xaml
     /// </summary>
     /// 
-    public class ConfigurationSettings
-    {
-        public string AppKey
-        {
-            get { return Properties.Settings.Default.ApplicationKey; }
-        }
-        public int ScanDepth
-        {
-            get { return Properties.Settings.Default.ScanDepth; }
-        }
-        public int FileOrder
-        {
-            get { return Properties.Settings.Default.FileOrder; }
-        }
-        public int NotFoundBehaviour
-        {
-            get { return Properties.Settings.Default.NotFoundBehaviour; }
-        }
-        public bool PlaylistPrivacy
-        {
-            get { return Properties.Settings.Default.PlaylistPrivacy; }
-        }
-        public bool LikeTracks
-        {
-            get { return Properties.Settings.Default.LikeTracks; }
-        }
-    }
 
     public partial class SettingsWindow : Window
     {
@@ -61,12 +34,7 @@ namespace Library_Brider_2.Spotify.Windows
 
         private void SaveSettings()
         {
-            Properties.Settings.Default.ApplicationKey = AppKeyBox.Text;
-            Properties.Settings.Default.ScanDepth = ScanDepthBox.SelectedIndex;
-            Properties.Settings.Default.FileOrder = FileOrderBox.SelectedIndex;
-            Properties.Settings.Default.NotFoundBehaviour = NotFoundBehaviourBox.SelectedIndex;
-            Properties.Settings.Default.PlaylistPrivacy = (bool)PlaylistPrivacyBox.IsChecked;
-            Properties.Settings.Default.LikeTracks = (bool)LikeTracksBox.IsChecked;
+            Properties.Settings.Default.Save();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e) => Close();

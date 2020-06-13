@@ -73,18 +73,6 @@ namespace Library_Brider_2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ApplicationKey {
-            get {
-                return ((string)(this["ApplicationKey"]));
-            }
-            set {
-                this["ApplicationKey"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public int FileOrder {
             get {
@@ -104,6 +92,18 @@ namespace Library_Brider_2.Properties {
             }
             set {
                 this["FileOrderReversed"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string ClientID {
+            get {
+                return ((string)(this["ClientID"]));
+            }
+            set {
+                this["ClientID"] = value;
             }
         }
     }

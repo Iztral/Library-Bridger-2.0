@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:p="clr-namespace:Library_Brider_2.Properties"
         mc:Ignorable="d"
         Title="Library Brider 2" Height="345.5" Width="255.869" ResizeMode="NoResize">
     <Grid>
@@ -14,19 +15,23 @@
         <Label Content="File Order By" HorizontalAlignment="Left" Margin="10,108,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.25,0.135" Width="93"/>
         <Label Content="Order Reversed" HorizontalAlignment="Left" Margin="10,138,0,0" VerticalAlignment="Top" Width="93"/>
         <Label Content="Not Found Songs" HorizontalAlignment="Left" Margin="10,169,0,0" VerticalAlignment="Top" Width="108"/>
-        <ComboBox Name="ScanDepthBox" HorizontalAlignment="Left" Margin="123,85,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="{Binding ScanDepth}">
+        <ComboBox Name="ScanDepthBox" HorizontalAlignment="Left" Margin="123,85,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="{Binding Source={x:Static p:Settings.Default}, 
+           Path=ScanDepth, Mode=TwoWay}">
             <Label Content="Top Directory"/>
             <Label Content="Deep Scan"/>
         </ComboBox>
-        <ComboBox Name="FileOrderBox" HorizontalAlignment="Left" Margin="123,112,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="{Binding FileOrder}">
+        <ComboBox Name="FileOrderBox" HorizontalAlignment="Left" Margin="123,112,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="{Binding Source={x:Static p:Settings.Default}, 
+           Path=FileOrder, Mode=TwoWay}">
             <Label Content="File Name"/>
             <Label Content="Author"/>
             <Label Content="Title"/>
             <Label Content="Date Created"/>
             <Label Content="Date Modified"/>
         </ComboBox>
-        <CheckBox Name="FileOrderReversedBox" Content="" HorizontalAlignment="Left" Margin="123,144,0,0" VerticalAlignment="Top" IsChecked="{Binding FileOrderReversed}"/>
-        <ComboBox Name="NotFoundBehaviourBox" HorizontalAlignment="Left" Margin="123,173,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="{Binding  NotFoundBehaviour}">
+        <CheckBox Name="FileOrderReversedBox" Content="" HorizontalAlignment="Left" Margin="123,144,0,0" VerticalAlignment="Top" IsChecked="{Binding Source={x:Static p:Settings.Default}, 
+           Path=FileOrderReversed, Mode=TwoWay}"/>
+        <ComboBox Name="NotFoundBehaviourBox" HorizontalAlignment="Left" Margin="123,173,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="{Binding Source={x:Static p:Settings.Default}, 
+           Path=NotFoundBehaviour, Mode=TwoWay}">
             <Label Content="Copy to .txt file" ToolTip="Copies the track names to a .txt file for easy identification"/>
             <Label Content="Copy to folder" ToolTip="Copies the tracks to a separate folder for easy loading into Spotify"/>
         </ComboBox>
@@ -34,9 +39,11 @@
         <Label Content="Add Playlist Options" HorizontalAlignment="Left" Margin="11,202,0,0" VerticalAlignment="Top" FontWeight="Bold" Width="131"/>
         <Label Content="Make Playlist Private" HorizontalAlignment="Left" Margin="11,233,0,0" VerticalAlignment="Top"/>
         <Label Content="Like Added Songs" HorizontalAlignment="Left" Margin="11,259,0,0" VerticalAlignment="Top"/>
-        <CheckBox Name="PlaylistPrivacyBox" Content="" HorizontalAlignment="Left" Margin="134,239,0,0" VerticalAlignment="Top" IsChecked="{Binding PlaylistPrivacy}"/>
-        <CheckBox Name="LikeTracksBox" Content="" HorizontalAlignment="Left" Margin="134,265,0,0" VerticalAlignment="Top" IsChecked="{Binding LikeTracks}"/>
+        <CheckBox Name="PlaylistPrivacyBox" Content="" HorizontalAlignment="Left" Margin="134,239,0,0" VerticalAlignment="Top" IsChecked="{Binding Source={x:Static p:Settings.Default}, 
+           Path=PlaylistPrivacy, Mode=TwoWay}"/>
+        <CheckBox Name="LikeTracksBox" Content="" HorizontalAlignment="Left" Margin="134,265,0,0" VerticalAlignment="Top" IsChecked="{Binding Source={x:Static p:Settings.Default}, 
+           Path=LikeTracks, Mode=TwoWay}"/>
         <Label Content="Application Key" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Height="26" FontWeight="Bold"/>
-        <TextBox Name="AppKeyBox" HorizontalAlignment="Left" Height="23" Margin="10,26,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="232" Text="{Binding AppKey}"/>
+        <TextBox Name="AppKeyBox" HorizontalAlignment="Left" Height="23" Margin="10,26,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="232" Text="{Binding Source={x:Static p:Settings.Default}, Path=ClientID, Mode=TwoWay}"/>
     </Grid>
 </Window>
