@@ -71,12 +71,15 @@ namespace Library_Brider_2.Properties {
             }
         }
         
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("3dbe7290d1e24bc8a85001c2374b4b08")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string ApplicationKey {
             get {
                 return ((string)(this["ApplicationKey"]));
+            }
+            set {
+                this["ApplicationKey"] = value;
             }
         }
         

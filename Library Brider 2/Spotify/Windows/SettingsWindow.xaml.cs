@@ -20,6 +20,10 @@ namespace Library_Brider_2.Spotify.Windows
     /// 
     public class ConfigurationSettings
     {
+        public string AppKey
+        {
+            get { return Properties.Settings.Default.ApplicationKey; }
+        }
         public int ScanDepth
         {
             get { return Properties.Settings.Default.ScanDepth; }
@@ -52,11 +56,12 @@ namespace Library_Brider_2.Spotify.Windows
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
             SaveSettings();
-            this.Close();
+            Close();
         }
 
         private void SaveSettings()
         {
+            Properties.Settings.Default.ApplicationKey = AppKeyBox.Text;
             Properties.Settings.Default.ScanDepth = ScanDepthBox.SelectedIndex;
             Properties.Settings.Default.FileOrder = FileOrderBox.SelectedIndex;
             Properties.Settings.Default.NotFoundBehaviour = NotFoundBehaviourBox.SelectedIndex;
@@ -64,9 +69,6 @@ namespace Library_Brider_2.Spotify.Windows
             Properties.Settings.Default.LikeTracks = (bool)LikeTracksBox.IsChecked;
         }
 
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
+        private void CancelButton_Click(object sender, RoutedEventArgs e) => Close();
     }
 }

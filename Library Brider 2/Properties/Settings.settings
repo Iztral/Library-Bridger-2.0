@@ -14,8 +14,8 @@
     <Setting Name="LikeTracks" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="ApplicationKey" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">3dbe7290d1e24bc8a85001c2374b4b08</Value>
+    <Setting Name="ApplicationKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="FileOrder" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>

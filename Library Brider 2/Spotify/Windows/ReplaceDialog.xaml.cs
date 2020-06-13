@@ -19,7 +19,7 @@ namespace Library_Brider_2.Spotify.Windows
             public FullTrack SpotifyTrack { get; set; }
         }
 
-        public ReplaceDialog(SearchClient search_result)
+        public ReplaceDialog(SearchResponse search_result)
         {
             List<ReplacementTrack> list = new List<ReplacementTrack>();
             InitializeComponent();
@@ -35,8 +35,6 @@ namespace Library_Brider_2.Spotify.Windows
             }
             switchBox.ItemsSource = list;
         }
-
-        
 
         private void SwitchBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
