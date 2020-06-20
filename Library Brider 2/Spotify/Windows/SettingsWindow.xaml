@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:p="clr-namespace:Library_Brider_2.Properties"
         mc:Ignorable="d"
-        Title="Library Brider 2" Height="345.5" Width="255.869" ResizeMode="NoResize">
+        Title="Library Brider 2" Height="365.5" Width="269.202" ResizeMode="NoResize">
     <Grid>
         <Button Name="SaveButton" Content="Save" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="SettingsButton_Click"/>
         <Button Name="CancelButton" Content="Cancel" Margin="0,0,90,10" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="CancelButton_Click"/>

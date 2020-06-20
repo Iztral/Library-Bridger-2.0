@@ -16,9 +16,6 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace Library_Brider_2.Spotify.Windows
 {
-    /// <summary>
-    /// Interaction logic for SpotifyWindow.xaml
-    /// </summary>
     public partial class SpotifyWindow : Window
     {
         private static EmbedIOAuthServer _server;
@@ -80,7 +77,7 @@ namespace Library_Brider_2.Spotify.Windows
 
         #region authorization functions
 
-        private async void Authorize()
+        public static async Task Authorize()
         {
             _server = new EmbedIOAuthServer(new Uri("http://localhost:5000/callback"), 5000);
             await _server.Start();
@@ -91,8 +88,7 @@ namespace Library_Brider_2.Spotify.Windows
             {
                 Scope = new List<string> { Scopes.UserLibraryModify, Scopes.PlaylistModifyPrivate, Scopes.PlaylistModifyPublic }
             };
-            Uri uri = request.ToUri();
-            BrowserUtil.Open(uri);
+            BrowserUtil.Open(request.ToUri());
         }
 
         private static async Task OnImplictGrantReceived(object sender, ImplictGrantResponse response)
@@ -101,6 +97,7 @@ namespace Library_Brider_2.Spotify.Windows
             _spotify = new SpotifyClient(response.AccessToken);
         }
 
+        //fix login check//
         private bool IsAuthorized()
         {
             if (_spotify.UserProfile != null)
@@ -293,9 +290,9 @@ namespace Library_Brider_2.Spotify.Windows
 
         private async Task<SearchResponse> SearchSpotifyForTrack(LocalTrack local_, int limitResultAmout)
         {
-            SearchResponse result;
+            SearchResponse result = new SearchResponse();
             int numberOfRetries = 0;
-            bool hasError;
+            bool hasError = false;
 
             string query = "";
             switch (local_.SearchType)
@@ -311,10 +308,19 @@ namespace Library_Brider_2.Spotify.Windows
 
             do
             {
-                //limit output
-                SearchRequest request = new SearchRequest(SearchRequest.Types.Track, query);
-                result = await _spotify.Search.Item(request);
-                hasError = CheckSearchResultForError(result);
+                try
+                {
+                    result = await _spotify.Search.Item(new SearchRequest(SearchRequest.Types.Track, query)
+                    {
+                        Limit = limitResultAmout
+                    });
+
+                }
+                catch (APITooManyRequestsException)
+                {
+                    Thread.Sleep(1100);
+                    hasError = true;
+                }
                 numberOfRetries++;
             }
             while (hasError || (hasError && (numberOfRetries < 3)));
@@ -332,17 +338,6 @@ namespace Library_Brider_2.Spotify.Windows
             found_list.ItemsSource = null;
             found_list.ItemsSource = tracksFoundInSpotify;
             found_list.ScrollIntoView(ListOfFoundTracks[ListOfFoundTracks.Count - 1]);
-        }
-
-        private bool CheckSearchResultForError(SearchResponse resultToCheck)
-        {
-            if (resultToCheck.HasError())
-            {
-                Thread.Sleep(1100);
-                return true;
-            }
-            else
-                return false;
         }
 
         private bool IsSearchEmpty(SearchResponse resultToCheck)
@@ -410,8 +405,9 @@ namespace Library_Brider_2.Spotify.Windows
 
         private async Task<FullPlaylist> CreateEmptyPlaylistInSpotifyAsync()
         {
-            //playlist privacy//
-            FullPlaylist newPlaylist = await _spotify.Playlists.Create((await _spotify.UserProfile.Current()).Id, new PlaylistCreateRequest(playlistName.Text));
+            FullPlaylist newPlaylist = await _spotify.Playlists.Create((await _spotify.UserProfile.Current()).Id, 
+                new PlaylistCreateRequest(playlistName.Text) { Public = !Properties.Settings.Default.PlaylistPrivacy });
+
             return newPlaylist;
         }
 
@@ -608,7 +604,7 @@ namespace Library_Brider_2.Spotify.Windows
 
         private void AuthButton_Click(object sender, RoutedEventArgs e)
         {
-            Authorize();
+            Authorize().Wait();
         }
 
         private void LocalSearchButton_Click(object sender, RoutedEventArgs e)
