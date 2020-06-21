@@ -1,12 +1,15 @@
 ﻿using Library_Brider_2.Generic_Classes;
 using SpotifyAPI.Web;
 using SpotifyAPI.Web.Auth;
+using SpotifyAPI.Web.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -82,28 +85,37 @@ namespace Library_Brider_2.Spotify.Windows
             _server = new EmbedIOAuthServer(new Uri("http://localhost:5000/callback"), 5000);
             await _server.Start();
 
-            _server.ImplictGrantReceived += OnImplictGrantReceived;
+            _server.ImplictGrantReceived += OnImplicitGrantReceived;
 
-            LoginRequest request = new LoginRequest(_server.BaseUri, Properties.Settings.Default.ClientID, LoginRequest.ResponseType.Code)
+            LoginRequest request = new LoginRequest(_server.BaseUri, Properties.Settings.Default.ClientID, LoginRequest.ResponseType.Token)
             {
                 Scope = new List<string> { Scopes.UserLibraryModify, Scopes.PlaylistModifyPrivate, Scopes.PlaylistModifyPublic }
             };
             BrowserUtil.Open(request.ToUri());
         }
 
-        private static async Task OnImplictGrantReceived(object sender, ImplictGrantResponse response)
+        private static async Task OnImplicitGrantReceived(object sender, ImplictGrantResponse response)
         {
             await _server.Stop();
-            _spotify = new SpotifyClient(response.AccessToken);
+
+            var config = SpotifyClientConfig.CreateDefault(response.AccessToken).WithHTTPLogger(new SimpleConsoleHTTPLogger());
+
+            _spotify = new SpotifyClient(config);
         }
 
-        //fix login check//
+        //enhance login check//
         private bool IsAuthorized()
         {
-            if (_spotify.UserProfile != null)
-                return true;
-            else
+            try
+            {
+                return _spotify.UserProfile.Current().Result.DisplayName != null;
+            }
+            catch (AggregateException)
+            {
+                MessageBox.Show("First, you must authorize the application.");
                 return false;
+            }
+            
         }
 
 
@@ -263,7 +275,6 @@ namespace Library_Brider_2.Spotify.Windows
             {
                 using (Task<SearchResponse> task = SearchSpotifyForTrack(local_, limitResultAmout))
                 {
-                    task.Wait();
                     return task.Result;
                 }
             }
@@ -271,7 +282,6 @@ namespace Library_Brider_2.Spotify.Windows
             {
                 using (Task<SearchResponse> task = SearchSpotifyForTrack(local_, limitResultAmout))
                 {
-                    task.Wait();
                     return task.Result;
                 }
             }
@@ -280,7 +290,6 @@ namespace Library_Brider_2.Spotify.Windows
                 //fingerprint search + change search type enum//
                 using (Task<SearchResponse> task = SearchSpotifyForTrack(local_, limitResultAmout))
                 {
-                    task.Wait();
                     return task.Result;
                 }
             }
@@ -405,7 +414,7 @@ namespace Library_Brider_2.Spotify.Windows
 
         private async Task<FullPlaylist> CreateEmptyPlaylistInSpotifyAsync()
         {
-            FullPlaylist newPlaylist = await _spotify.Playlists.Create((await _spotify.UserProfile.Current()).Id, 
+            FullPlaylist newPlaylist = await _spotify.Playlists.Create((await _spotify.UserProfile.Current()).Id,
                 new PlaylistCreateRequest(playlistName.Text) { Public = !Properties.Settings.Default.PlaylistPrivacy });
 
             return newPlaylist;
@@ -610,9 +619,7 @@ namespace Library_Brider_2.Spotify.Windows
         private void LocalSearchButton_Click(object sender, RoutedEventArgs e)
         {
             if (IsAuthorized())
-                FillLocalListWithTracks();
-            else
-                MessageBox.Show("First, you must authorize the application.");
+                FillLocalListWithTracks();        
         }
 
         private void SearchButton_Click(object sender, RoutedEventArgs e)
@@ -675,8 +682,6 @@ namespace Library_Brider_2.Spotify.Windows
                 else
                     MessageBox.Show("No backup found.");
             }
-            else
-                MessageBox.Show("Application is unathorized");
         }
         #endregion
     }

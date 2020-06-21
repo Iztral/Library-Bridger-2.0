@@ -61,7 +61,7 @@ namespace Library_Brider_2.Generic_Classes
 
         public string FullTagTitle()
         {
-            return Author + "+" + Title;
+            return Author + " - " + Title;
         }
     }
 }
