@@ -8,8 +8,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -39,7 +37,7 @@ namespace Library_Brider_2.Spotify.Windows
 
         private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            progressBar.Value = e.ProgressPercentage+1;
+            progressBar.Value = e.ProgressPercentage + 1;
             ScrollToLatestTrack((List<FullTrack>)e.UserState);
         }
 
@@ -116,7 +114,7 @@ namespace Library_Brider_2.Spotify.Windows
                 MessageBox.Show("First, you must authorize the application.");
                 return false;
             }
-            
+
         }
 
 
@@ -620,7 +618,7 @@ namespace Library_Brider_2.Spotify.Windows
         private void LocalSearchButton_Click(object sender, RoutedEventArgs e)
         {
             if (IsAuthorized())
-                FillLocalListWithTracks();        
+                FillLocalListWithTracks();
         }
 
         private void SearchButton_Click(object sender, RoutedEventArgs e)
@@ -671,7 +669,7 @@ namespace Library_Brider_2.Spotify.Windows
 
                     LoadApplicationState(ref listLocal_, ref songIds);
 
-                    songIds.ForEach(async x => listSpotify_.Add(await _spotify.Tracks.Get(x)));
+                    songIds.ForEach(async x => listSpotify_.Add(_spotify.Tracks.Get(x).Result));
 
                     if (!(listLocal_.Count == 0 || listSpotify_.Count == 0))
                     {
