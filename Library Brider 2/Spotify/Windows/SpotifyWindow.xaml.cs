@@ -669,7 +669,7 @@ namespace Library_Brider_2.Spotify.Windows
 
                     LoadApplicationState(ref listLocal_, ref songIds);
 
-                    songIds.ForEach(async x => listSpotify_.Add(_spotify.Tracks.Get(x).Result));
+                    listSpotify_.AddRange(songIds.Select(Id => _spotify.Tracks.Get(Id).Result));
 
                     if (!(listLocal_.Count == 0 || listSpotify_.Count == 0))
                     {
