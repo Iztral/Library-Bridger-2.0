@@ -39,7 +39,7 @@ namespace Library_Brider_2.Spotify.Windows
 
         private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            progressBar.Value = e.ProgressPercentage;
+            progressBar.Value = e.ProgressPercentage+1;
             ScrollToLatestTrack((List<FullTrack>)e.UserState);
         }
 
@@ -51,6 +51,7 @@ namespace Library_Brider_2.Spotify.Windows
             {
                 AddPlaylist_Button.IsEnabled = true;
             }
+
         }
 
         private void SearchButtonSearchFinished()
@@ -625,7 +626,10 @@ namespace Library_Brider_2.Spotify.Windows
         private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             SearchButtonSearchStarted();
-            backgroundWorker.RunWorkerAsync();
+            if (!backgroundWorker.IsBusy)
+            {
+                backgroundWorker.RunWorkerAsync();
+            }
         }
 
         private void CancelSearch_Click(object sender, RoutedEventArgs e)
