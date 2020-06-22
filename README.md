@@ -6,4 +6,4 @@ Features:
 - Edit found tracks in case of mismatches.
 - Create playlists from found tracks.
 - Identify songs that are missing tags or filenames by Audio Fingerprinting (TODO).
-- Backup your search results for later ediging.
+- Backup your search results for later editing.
