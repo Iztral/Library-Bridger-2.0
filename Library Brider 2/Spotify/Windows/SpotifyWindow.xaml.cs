@@ -1,7 +1,6 @@
 ﻿using Library_Brider_2.Generic_Classes;
 using SpotifyAPI.Web;
 using SpotifyAPI.Web.Auth;
-using SpotifyAPI.Web.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -49,7 +48,6 @@ namespace Library_Brider_2.Spotify.Windows
             {
                 AddPlaylist_Button.IsEnabled = true;
             }
-
         }
 
         private void SearchButtonSearchFinished()
@@ -96,10 +94,7 @@ namespace Library_Brider_2.Spotify.Windows
         private static async Task OnImplicitGrantReceived(object sender, ImplictGrantResponse response)
         {
             await _server.Stop();
-
-            var config = SpotifyClientConfig.CreateDefault(response.AccessToken).WithHTTPLogger(new SimpleConsoleHTTPLogger());
-
-            _spotify = new SpotifyClient(config);
+            _spotify = new SpotifyClient(response.AccessToken);
         }
 
         //enhance login check//
@@ -128,7 +123,7 @@ namespace Library_Brider_2.Spotify.Windows
             if (folderPath != null)
             {
                 List<LocalTrack> trackList = GetLocalTracksFromFolder(folderPath);
-                SortTracks(trackList);
+                SortTracks(ref trackList);
 
                 if (trackList != null && trackList.Count > 0)
                 {
@@ -186,7 +181,7 @@ namespace Library_Brider_2.Spotify.Windows
             return new LocalTrack(path);
         }
 
-        private void SortTracks(List<LocalTrack> trackList)
+        private void SortTracks(ref List<LocalTrack> trackList)
         {
             switch (Properties.Settings.Default.FileOrder)
             {
@@ -277,7 +272,7 @@ namespace Library_Brider_2.Spotify.Windows
             }
             if (local_.SearchType == LocalSearchType.FILENAME_ONLY)
             {
-                searchResponse =  SearchSpotifyForTrack(local_, limitResultAmout);
+                searchResponse = SearchSpotifyForTrack(local_, limitResultAmout);
             }
             if (local_.SearchType == LocalSearchType.AUDIO_SEARCH)
             {
@@ -294,20 +289,7 @@ namespace Library_Brider_2.Spotify.Windows
             int numberOfRetries = 0;
             bool hasError = false;
 
-            string query = "";
-            switch (local_.SearchType)
-            {
-                case LocalSearchType.FULL_TAGS:
-                    query = local_.FullTagTitle();
-                    break;
-
-                case LocalSearchType.FILENAME_ONLY:
-                    query = local_.FileName;
-                    break;
-                case LocalSearchType.AUDIO_SEARCH:
-                    query = local_.FullTagTitle();
-                    break;
-            }
+            string query = GetSearchQueryFromTrack(local_);
 
             do
             {
@@ -341,13 +323,31 @@ namespace Library_Brider_2.Spotify.Windows
             return result;
         }
 
+        private string GetSearchQueryFromTrack(LocalTrack local_)
+        {
+            switch (local_.SearchType)
+            {
+                case LocalSearchType.FULL_TAGS:
+                    return local_.FullTagTitle();
+                case LocalSearchType.FILENAME_ONLY:
+                    return local_.FileName;
+                case LocalSearchType.AUDIO_SEARCH:
+                    return local_.FullTagTitle();
+                default:
+                    return local_.FileName;
+            }
+        }
+
         private List<LocalTrack> ListOfLocalTracks => (List<LocalTrack>)local_list.ItemsSource;
 
         private void ScrollToLatestTrack(List<FullTrack> tracksFoundInSpotify)
         {
-            found_list.ItemsSource = null;
-            found_list.ItemsSource = tracksFoundInSpotify;
-            found_list.ScrollIntoView(ListOfFoundTracks[ListOfFoundTracks.Count - 1]);
+            if (tracksFoundInSpotify != null && tracksFoundInSpotify.Count() > 0)
+            {
+                found_list.ItemsSource = null;
+                found_list.ItemsSource = tracksFoundInSpotify;
+                found_list.ScrollIntoView(ListOfFoundTracks.Last());
+            }
         }
 
         private bool IsSearchEmpty(SearchResponse resultToCheck)

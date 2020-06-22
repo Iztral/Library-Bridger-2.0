@@ -40,8 +40,8 @@
             </ListView.ContextMenu>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Author" DisplayMemberBinding="{Binding Path= Artists[0].Name}"/>
-                    <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Path= Name}"/>
+                    <GridViewColumn Header="Author" DisplayMemberBinding="{Binding Path= Artists[0].Name}" Width="200"/>
+                    <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Path= Name}" Width="200"/>
                 </GridView>
             </ListView.View>
         </ListView>
