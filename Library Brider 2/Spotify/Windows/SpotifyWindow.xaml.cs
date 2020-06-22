@@ -243,7 +243,7 @@ namespace Library_Brider_2.Spotify.Windows
                 else
                 {
                     SearchResponse searchResults = GetTrackSearchResults(localTrack, 1);
-                    if (IsSearchEmpty(searchResults))
+                    if (!IsSearchEmpty(searchResults))
                     {
                         FullTrack track = searchResults.Tracks.Items[0];
                         tracksFoundInSpotify.Add(track);
@@ -272,35 +272,28 @@ namespace Library_Brider_2.Spotify.Windows
         {
             if (local_.SearchType == LocalSearchType.FULL_TAGS)
             {
-                using (Task<SearchResponse> task = SearchSpotifyForTrack(local_, limitResultAmout))
-                {
-                    return task.Result;
-                }
+                return SearchSpotifyForTrack(local_, limitResultAmout);
             }
             if (local_.SearchType == LocalSearchType.FILENAME_ONLY)
             {
-                using (Task<SearchResponse> task = SearchSpotifyForTrack(local_, limitResultAmout))
-                {
-                    return task.Result;
-                }
+                return SearchSpotifyForTrack(local_, limitResultAmout);
             }
             if (local_.SearchType == LocalSearchType.AUDIO_SEARCH)
             {
                 //fingerprint search + change search type enum//
-                using (Task<SearchResponse> task = SearchSpotifyForTrack(local_, limitResultAmout))
-                {
-                    return task.Result;
-                }
+                return SearchSpotifyForTrack(local_, limitResultAmout);
             }
 
             return new SearchResponse();
         }
 
-        private async Task<SearchResponse> SearchSpotifyForTrack(LocalTrack local_, int limitResultAmout)
+        private SearchResponse SearchSpotifyForTrack(LocalTrack local_, int limitResultAmout)
         {
             SearchResponse result = new SearchResponse();
             int numberOfRetries = 0;
             bool hasError = false;
+
+            
 
             string query = "";
             switch (local_.SearchType)
@@ -318,20 +311,30 @@ namespace Library_Brider_2.Spotify.Windows
             {
                 try
                 {
-                    result = await _spotify.Search.Item(new SearchRequest(SearchRequest.Types.Track, query)
+                    result = _spotify.Search.Item(new SearchRequest(SearchRequest.Types.Track, query)
                     {
                         Limit = limitResultAmout
+                    }).Result;
+                    
+
+                }
+                catch (AggregateException e)
+                {
+                    e.Handle((x) =>
+                    {
+                        if (x is APITooManyRequestsException)
+                        {
+                            Thread.Sleep(1100);
+                            hasError = true;
+                            return true;
+                        }
+                        return false;
                     });
 
                 }
-                catch (APITooManyRequestsException)
-                {
-                    Thread.Sleep(1100);
-                    hasError = true;
-                }
                 numberOfRetries++;
             }
-            while (hasError || (hasError && (numberOfRetries < 3)));
+            while (hasError && (hasError && (numberOfRetries < 2)));
 
             if (IsSearchEmpty(result) && !hasError)
                 DecreaseSearchCriteria(local_);
@@ -350,7 +353,10 @@ namespace Library_Brider_2.Spotify.Windows
 
         private bool IsSearchEmpty(SearchResponse resultToCheck)
         {
-            return resultToCheck.Tracks.Items.Any();
+            if(resultToCheck.Tracks == null)
+                return true;
+            else
+                return !resultToCheck.Tracks.Items.Any();
         }
 
         private void DecreaseSearchCriteria(LocalTrack local_)
@@ -408,13 +414,13 @@ namespace Library_Brider_2.Spotify.Windows
 
         private bool CreateFilledPlaylistInSpotify()
         {
-            return AddTracks(CreateEmptyPlaylistInSpotifyAsync().Id.ToString(), ListOfFoundTracks);
+            return AddTracks(CreateEmptyPlaylistInSpotify().Id.ToString(), ListOfFoundTracks);
         }
 
-        private async Task<FullPlaylist> CreateEmptyPlaylistInSpotifyAsync()
+        private FullPlaylist CreateEmptyPlaylistInSpotify()
         {
-            FullPlaylist newPlaylist = await _spotify.Playlists.Create((await _spotify.UserProfile.Current()).Id,
-                new PlaylistCreateRequest(playlistName.Text) { Public = !Properties.Settings.Default.PlaylistPrivacy });
+            FullPlaylist newPlaylist = _spotify.Playlists.Create((_spotify.UserProfile.Current().Result).Id,
+                new PlaylistCreateRequest(playlistName.Text) { Public = !Properties.Settings.Default.PlaylistPrivacy }).Result;
 
             return newPlaylist;
         }
@@ -432,12 +438,11 @@ namespace Library_Brider_2.Spotify.Windows
 
         private bool FillPlaylistWithTracks(string playlistId, List<FullTrack> tracksAddedToPlaylist)
         {
-            SnapshotResponse response = new SnapshotResponse();
-
             List<string> trackUris = new List<string>();
             tracksAddedToPlaylist.ForEach(i => trackUris.Add(i.Uri));
 
-            SplitList<string>(trackUris, 99).ForEach(async i => response = await _spotify.Playlists.AddItems(playlistId, new PlaylistAddItemsRequest(i)));
+            SnapshotResponse response = new SnapshotResponse();
+            SplitList<string>(trackUris, 99).ForEach(i => response = _spotify.Playlists.AddItems(playlistId, new PlaylistAddItemsRequest(i)).Result);
             return response.SnapshotId == null ? false : true;
         }
 
@@ -460,7 +465,7 @@ namespace Library_Brider_2.Spotify.Windows
             List<string> songIds = new List<string>();
             tracksAddedToPlaylist.ForEach(i => songIds.Add(i.Id));
 
-            SplitList(songIds, 99).ForEach(async i => response = await _spotify.Library.SaveTracks(new LibrarySaveTracksRequest(i)));
+            SplitList(songIds, 99).ForEach(i => response = _spotify.Library.SaveTracks(new LibrarySaveTracksRequest(i)).Result);
 
             return response;
         }

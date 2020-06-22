@@ -41,10 +41,18 @@ namespace Library_Brider_2.Generic_Classes
 
         private void SetTagsFromFile(string filePath)
         {
-            TagLib.File file_tags = TagLib.File.Create(filePath);
-            Author = Filter.CleanStringForSearch(file_tags.Tag.FirstPerformer);
-            Title = Filter.CleanStringForSearch(file_tags.Tag.Title);
-            file_tags.Dispose();
+            try
+            {
+                TagLib.File file_tags = TagLib.File.Create(filePath);
+                Author = Filter.CleanStringForSearch(file_tags.Tag.FirstPerformer);
+                Title = Filter.CleanStringForSearch(file_tags.Tag.Title);
+                file_tags.Dispose();
+            }
+            catch
+            {
+                Author = null;
+                Title = null;
+            }
         }
 
         private void DetermineSearchType()
