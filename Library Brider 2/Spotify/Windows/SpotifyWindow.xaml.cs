@@ -61,9 +61,9 @@ namespace Library_Brider_2.Spotify.Windows
 
         private void SearchButtonSearchStarted()
         {
-            Search_Button.Click -= CancelSearch_Click;
-            Search_Button.Click += SearchButton_Click;
-            Search_Button.Content = "Spotify Search";
+            Search_Button.Click -= SearchButton_Click;
+            Search_Button.Click += CancelSearch_Click;
+            Search_Button.Content = "Stop Search";
         }
 
         private void SetupWorker()
@@ -270,21 +270,22 @@ namespace Library_Brider_2.Spotify.Windows
 
         private SearchResponse GetTrackSearchResults(LocalTrack local_, int limitResultAmout)
         {
+            SearchResponse searchResponse = new SearchResponse();
             if (local_.SearchType == LocalSearchType.FULL_TAGS)
             {
-                return SearchSpotifyForTrack(local_, limitResultAmout);
+                searchResponse = SearchSpotifyForTrack(local_, limitResultAmout);
             }
             if (local_.SearchType == LocalSearchType.FILENAME_ONLY)
             {
-                return SearchSpotifyForTrack(local_, limitResultAmout);
+                searchResponse =  SearchSpotifyForTrack(local_, limitResultAmout);
             }
             if (local_.SearchType == LocalSearchType.AUDIO_SEARCH)
             {
                 //fingerprint search + change search type enum//
-                return SearchSpotifyForTrack(local_, limitResultAmout);
+                searchResponse = SearchSpotifyForTrack(local_, limitResultAmout);
             }
 
-            return new SearchResponse();
+            return searchResponse;
         }
 
         private SearchResponse SearchSpotifyForTrack(LocalTrack local_, int limitResultAmout)
@@ -292,8 +293,6 @@ namespace Library_Brider_2.Spotify.Windows
             SearchResponse result = new SearchResponse();
             int numberOfRetries = 0;
             bool hasError = false;
-
-            
 
             string query = "";
             switch (local_.SearchType)
@@ -305,6 +304,9 @@ namespace Library_Brider_2.Spotify.Windows
                 case LocalSearchType.FILENAME_ONLY:
                     query = local_.FileName;
                     break;
+                case LocalSearchType.AUDIO_SEARCH:
+                    query = local_.FullTagTitle();
+                    break;
             }
 
             do
@@ -315,8 +317,6 @@ namespace Library_Brider_2.Spotify.Windows
                     {
                         Limit = limitResultAmout
                     }).Result;
-                    
-
                 }
                 catch (AggregateException e)
                 {
@@ -330,7 +330,6 @@ namespace Library_Brider_2.Spotify.Windows
                         }
                         return false;
                     });
-
                 }
                 numberOfRetries++;
             }
@@ -353,7 +352,7 @@ namespace Library_Brider_2.Spotify.Windows
 
         private bool IsSearchEmpty(SearchResponse resultToCheck)
         {
-            if(resultToCheck.Tracks == null)
+            if (resultToCheck.Tracks == null)
                 return true;
             else
                 return !resultToCheck.Tracks.Items.Any();
