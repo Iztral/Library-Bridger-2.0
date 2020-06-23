@@ -14,3 +14,5 @@ Setting up:
 - Make sure "http://localhost:5000/callback" is in your spotify application as redirect uri! After this you can authorize your session and start searching for your songs.
 - Additionaly, if you want to use AcoustID to identify songs by their audio you need to sign up here: https://acoustid.org/new-application and create an appliaction. 
 -Like before, after this you will get an API Key that you will need to paste into the Settings window. To enable audio fingerpinting just tick the bottom checkbox and paste the key. This should be it.
+
+A enormous thank you to Jonas Dellinger for his SpotifyAPI-NET, without which I wouldn't finish my BEng Thesis. You can find the API here: https://github.com/JohnnyCrazy/SpotifyAPI-NET.
