@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Library_Brider_2.Generic_Classes
+namespace Library_Brider_2.Generic
 {
 
 

@@ -97,13 +97,37 @@ namespace Library_Brider_2.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string ClientID {
             get {
                 return ((string)(this["ClientID"]));
             }
             set {
                 this["ClientID"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string AcoustID {
+            get {
+                return ((string)(this["AcoustID"]));
+            }
+            set {
+                this["AcoustID"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseFingerprint {
+            get {
+                return ((bool)(this["UseFingerprint"]));
+            }
+            set {
+                this["UseFingerprint"] = value;
             }
         }
     }
