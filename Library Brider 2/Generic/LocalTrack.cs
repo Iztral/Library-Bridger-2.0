@@ -2,9 +2,10 @@
 using System.IO;
 using System.Xml.Serialization;
 
-namespace Library_Brider_2.Generic_Classes
+namespace Library_Brider_2.Generic
 {
     public enum LocalSearchType { AUDIO_SEARCH, FILENAME_ONLY, FULL_TAGS }
+    public enum FingerprintStatus {NONE, GOT_RESULT, NO_RESULT, WEBSERVICE_ERROR, UNEXPECTED_ERROR}
 
     [XmlRootAttribute("LocalTrack", Namespace = "Library_Brider_2", IsNullable = false)]
     public class LocalTrack
@@ -25,7 +26,7 @@ namespace Library_Brider_2.Generic_Classes
 
         public string SpotifyUri { get; set; }
 
-        public string Error { get; set; }
+        public FingerprintStatus FingerprintStatus { get; set; }
 
         public LocalTrack(string filePath)
         {

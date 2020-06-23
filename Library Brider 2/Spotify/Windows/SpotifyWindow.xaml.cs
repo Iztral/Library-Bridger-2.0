@@ -1,4 +1,4 @@
-﻿using Library_Brider_2.Generic_Classes;
+﻿using Library_Brider_2.Generic;
 using SpotifyAPI.Web;
 using SpotifyAPI.Web.Auth;
 using System;
@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Xml.Serialization;
 using MessageBox = System.Windows.MessageBox;
+
 
 namespace Library_Brider_2.Spotify.Windows
 {
@@ -243,6 +244,7 @@ namespace Library_Brider_2.Spotify.Windows
                         FullTrack track = searchResults.Tracks.Items[0];
                         tracksFoundInSpotify.Add(track);
                         localTrack.SpotifyUri = track.Id;
+
                     }
                     else
                         ProcessNotFoundFile(localTrack);
@@ -274,10 +276,20 @@ namespace Library_Brider_2.Spotify.Windows
             {
                 searchResponse = SearchSpotifyForTrack(local_, limitResultAmout);
             }
-            if (local_.SearchType == LocalSearchType.AUDIO_SEARCH)
+
+            if (Properties.Settings.Default.UseFingerprint && local_.SearchType == LocalSearchType.AUDIO_SEARCH)
             {
-                //fingerprint search + change search type enum//
-                searchResponse = SearchSpotifyForTrack(local_, limitResultAmout);
+                local_ = GetTagsByFingerprint(local_);
+
+                if (local_.FingerprintStatus == FingerprintStatus.GOT_RESULT)
+                {
+                    local_.SearchType = LocalSearchType.FULL_TAGS;
+                    searchResponse = SearchSpotifyForTrack(local_, limitResultAmout);
+                }
+                else if(local_.FingerprintStatus == FingerprintStatus.WEBSERVICE_ERROR)
+                {
+                    MessageBox.Show("Something went wrong with the webservice. Are you sure the AcoustID API Key is correct?");
+                }
             }
 
             return searchResponse;
@@ -404,6 +416,8 @@ namespace Library_Brider_2.Spotify.Windows
                 + "Number of found songs: " + tracksFoundInSpotify.Count + Environment.NewLine
                 + "Time elapsed (in seconds): " + timeElapsed);
         }
+
+
 
         #endregion
 
@@ -606,6 +620,24 @@ namespace Library_Brider_2.Spotify.Windows
 
         #endregion
 
+        #region fingerpinting
+
+        private LocalTrack GetTagsByFingerprint(LocalTrack local_)
+        {
+            try
+            {
+                local_ = Fingerprinting.Fingerprint.LookUp(local_);
+            }
+            catch (InvalidOperationException)
+            {
+
+            }
+
+            return local_;
+        }
+
+        #endregion
+
         #region main buttons logic
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
@@ -616,7 +648,15 @@ namespace Library_Brider_2.Spotify.Windows
 
         private void AuthButton_Click(object sender, RoutedEventArgs e)
         {
-            Authorize().Wait();
+            if (!string.IsNullOrEmpty(Properties.Settings.Default.ClientID))
+            {
+                if (!Properties.Settings.Default.UseFingerprint || (Properties.Settings.Default.UseFingerprint && !string.IsNullOrEmpty(Properties.Settings.Default.AcoustID)))
+                    Authorize().Wait();
+                else
+                    MessageBox.Show($"Looks like you're using AcoustID to recognise songs and are missing the API Key. You can get it by registering here: https://acoustid.org/new-application");
+            }
+            else
+                MessageBox.Show($"Looks like you're missing a Spotify Client ID. You can get it on https://developer.spotify.com/ and later paste it in the Setting window.");
         }
 
         private void LocalSearchButton_Click(object sender, RoutedEventArgs e)
