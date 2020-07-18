@@ -1,4 +1,4 @@
-# Library-Bridger-2
+# Library-Bridger-2.0
 Revision of previous Library Bridger application. Features much cleaner code and refined UI.
 
 Features:
